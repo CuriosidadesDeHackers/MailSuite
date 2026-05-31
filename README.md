@@ -1,332 +1,325 @@
-# MailPanel — Servidor de Correo Propio en VPS
+<p align="center">
+  <img src="https://raw.githubusercontent.com/CuriosidadesDeHackers/MailSuite/master/assets/banner.png" alt="MailSuite Banner" width="100%">
+</p>
 
-Panel de administración completo para montar y gestionar un servidor de correo propio con Postfix, Dovecot, Rspamd, OpenDKIM y Nginx. Sin depender de proveedores externos.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/CuriosidadesDeHackers/MailSuite/master/assets/logo.png" alt="MailSuite Logo" width="110" height="110" style="border-radius: 20px;">
+</p>
 
----
+<h1 align="center">MailSuite</h1>
 
-## Arquitectura
+<p align="center">
+  <strong>Panel de administración completo para montar tu propio servidor de correo en una VPS.</strong><br>
+  Gestiona dominios, buzones, alias y servicios de correo desde una interfaz web moderna.<br>
+  Sin depender de proveedores externos. Postfix + Dovecot + Rspamd + DKIM + DMARC.
+</p>
 
-```
-Internet
-   │
-   ▼
-Nginx (443 HTTPS)
-   ├── /          → React Frontend (SPA)
-   ├── /api/      → Django REST API (Gunicorn UNIX socket)
-   ├── /webmail/  → Roundcube (opcional)
-   └── /rspamd/   → Rspamd Web UI
-
-Django API
-   ├── JWT Auth
-   ├── apps/domains    → Dominios + DKIM + DNS checker
-   ├── apps/mailboxes  → Buzones virtuales
-   ├── apps/aliases    → Alias y redirecciones
-   └── apps/services   → Control de servicios + logs
-
-Servidor de correo
-   ├── Postfix (SMTP 25, Submission 587, SMTPS 465)
-   │     └── consulta PostgreSQL para dominios/buzones/alias
-   ├── Dovecot (IMAP 993, POP3 995)
-   │     └── autentica contra PostgreSQL con SHA512-CRYPT
-   ├── Rspamd (milter antispam)
-   ├── OpenDKIM (firma DKIM)
-   └── Fail2ban (protección fuerza bruta)
-
-Base de datos: PostgreSQL
-Almacenamiento: Maildir en /var/mail/vhosts/<dominio>/<usuario>/
-```
+<p align="center">
+  <img src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" alt="Maintained">
+  <img src="https://img.shields.io/badge/PRs-welcome-blue.svg" alt="PRs Welcome">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License MIT">
+  <img src="https://img.shields.io/badge/Python-3.10+-blue.svg" alt="Python">
+  <img src="https://img.shields.io/badge/Django-4.2-green.svg" alt="Django">
+  <img src="https://img.shields.io/badge/React-18-61DAFB.svg" alt="React">
+</p>
 
 ---
 
-## Requisitos del VPS
+## 👥 Autor
 
-| Recurso | Mínimo | Recomendado |
-|---------|--------|-------------|
-| RAM     | 1 GB   | 2 GB        |
-| CPU     | 1 vCPU | 2 vCPU      |
-| Disco   | 20 GB  | 50+ GB      |
-| OS      | Ubuntu 22.04 LTS | Ubuntu 22.04/24.04 |
+<br>
 
-**Puertos que deben estar abiertos en el firewall:**
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="200">
+        <a href="https://github.com/CuriosidadesDeHackers" target="_blank">
+          <img src="https://avatars.githubusercontent.com/CuriosidadesDeHackers" width="120" height="120" style="border-radius: 50%; border: 3px solid #3b82f6;" alt="CuriosidadesDeHackers">
+        </a>
+        <br><br>
+        <strong>CuriosidadesDeHackers</strong>
+        <br>
+        <a href="https://github.com/CuriosidadesDeHackers" target="_blank">
+          <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub">
+        </a>
+        &nbsp;
+        <a href="https://www.youtube.com/@CuriosidadesDeHackers" target="_blank">
+          <img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube">
+        </a>
+      </td>
+    </tr>
+  </table>
+</div>
 
-| Puerto | Protocolo | Servicio |
-|--------|-----------|---------|
-| 22     | TCP       | SSH |
-| 25     | TCP       | SMTP (recepción) |
-| 80     | TCP       | HTTP (redirect) |
-| 443    | TCP       | HTTPS (panel + webmail) |
-| 465    | TCP       | SMTPS |
-| 587    | TCP       | SMTP Submission |
-| 993    | TCP       | IMAPS |
-| 995    | TCP       | POP3S |
-
----
-
-## Instalación en VPS limpio
-
-### 1. Preparar el servidor
-
-```bash
-# Conectarse al VPS
-ssh root@TU_IP_VPS
-
-# Actualizar sistema
-apt update && apt upgrade -y
-
-# Instalar git
-apt install -y git
-
-# Clonar el proyecto
-git clone https://github.com/tu-usuario/mailpanel.git /opt/mailpanel
-cd /opt/mailpanel
-```
-
-### 2. Configurar el hostname
-
-```bash
-# Importante: el hostname debe coincidir con tu dominio de correo
-hostnamectl set-hostname mail.tudominio.com
-echo "127.0.0.1 mail.tudominio.com" >> /etc/hosts
-```
-
-### 3. Verificar que el DNS A está configurado
-
-Antes de ejecutar el instalador, **configura primero el registro A** en tu proveedor DNS:
-
-```
-mail.tudominio.com  →  TU_IP_VPS
-```
-
-Espera a que propague (puede tardar de 5 minutos a 1 hora).
-
-### 4. Ejecutar el instalador
-
-```bash
-chmod +x scripts/*.sh
-sudo bash scripts/install.sh \
-  --domain mail.tudominio.com \
-  --email admin@tudominio.com
-```
-
-El instalador hará automáticamente:
-- Instalar y configurar todos los paquetes
-- Configurar Postfix, Dovecot, Rspamd, OpenDKIM
-- Crear la base de datos PostgreSQL
-- Obtener certificado SSL con Let's Encrypt
-- Desplegar el backend Django con Gunicorn
-- Construir el frontend React
-- Configurar Fail2ban
-
-### 5. Acceder al panel
-
-Una vez instalado, ve a `https://mail.tudominio.com` y accede con:
-- **Usuario:** admin
-- **Contraseña:** la generada durante la instalación (se muestra al final del script)
-
-> Cambia la contraseña inmediatamente en Perfil → Cambiar contraseña.
+<br>
 
 ---
 
-## Configuración DNS
-
-Después de instalar, debes añadir estos registros DNS en tu proveedor de dominio:
-
-### Registros obligatorios
-
-| Tipo | Nombre | Valor | TTL |
-|------|--------|-------|-----|
-| A    | `mail` | `TU_IP_VPS` | 3600 |
-| MX   | `@` o `tudominio.com` | `mail.tudominio.com` (prioridad 10) | 3600 |
-| TXT (SPF) | `@` | `v=spf1 mx a ip4:TU_IP_VPS ~all` | 3600 |
-| TXT (DMARC) | `_dmarc` | `v=DMARC1; p=quarantine; rua=mailto:dmarc@tudominio.com` | 3600 |
-
-### Registro DKIM
-
-Obtén tu clave pública DKIM con:
-
-```bash
-cat /etc/opendkim/keys/tudominio.com/mail.txt
-```
-
-El resultado será algo como:
-```
-mail._domainkey IN TXT ( "v=DKIM1; k=rsa; "
-  "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQ..." )
-```
-
-Crea un registro TXT:
-| Tipo | Nombre | Valor |
-|------|--------|-------|
-| TXT  | `mail._domainkey` | `v=DKIM1; k=rsa; p=TU_CLAVE_PUBLICA` |
-
-### PTR (rDNS) — Crítico para evitar spam
-
-El PTR **debes configurarlo en tu proveedor VPS** (Hetzner, DigitalOcean, etc.):
-- IP: `TU_IP_VPS`
-- Valor: `mail.tudominio.com`
-
----
-
-## Verificar la configuración
-
-```bash
-# Verificar que Postfix envía correctamente
-echo "Test" | mail -s "Test MailPanel" tu@otroemail.com
-
-# Probar autenticación SMTP
-swaks --to tu@otroemail.com --from usuario@tudominio.com \
-  --server mail.tudominio.com:587 \
-  --auth LOGIN \
-  --auth-user usuario@tudominio.com
-
-# Comprobar DKIM
-opendkim-testkey -d tudominio.com -s mail -vvv
-
-# Ver cola de Postfix
-mailq
-
-# Ver logs en tiempo real
-tail -f /var/log/mail.log
-```
-
-### Herramientas online de verificación
-
-- **MX Toolbox:** https://mxtoolbox.com/SuperTool.aspx
-- **Mail Tester:** https://www.mail-tester.com (envía un correo y puntúa)
-- **DKIM Validator:** https://dkimvalidator.com
-- **Blacklist Check:** https://mxtoolbox.com/blacklists.aspx
-
----
-
-## Gestión de correos
-
-### Crear un buzón desde el panel
-
-1. Ir a **Dominios** → añadir tu dominio
-2. Verificar los registros DNS con el botón **Verificar DNS**
-3. Ir a **Buzones** → **Crear buzón**
-4. Rellenar usuario, contraseña (mínimo 12 caracteres) y cuota
-
-### Crear un alias
-
-1. Ir a **Alias** → **Crear alias**
-2. Seleccionar dominio, nombre del alias y destinos (separados por coma)
-
-### Configurar cliente de correo
-
-| Campo | Valor |
-|-------|-------|
-| Servidor IMAP | `mail.tudominio.com` |
-| Puerto IMAP   | `993` (SSL/TLS) |
-| Servidor SMTP | `mail.tudominio.com` |
-| Puerto SMTP   | `587` (STARTTLS) |
-| Usuario       | `usuario@tudominio.com` |
-| Contraseña    | La configurada en el panel |
-
----
-
-## Instalación de Roundcube (Webmail)
-
-```bash
-# Instalar dependencias PHP
-apt install -y php php-fpm php-mysql php-pgsql php-intl \
-  php-mbstring php-xml php-zip php-curl php-gd
-
-# Descargar Roundcube
-cd /var/www
-wget https://github.com/roundcube/roundcubemail/releases/download/1.6.7/roundcubemail-1.6.7-complete.tar.gz
-tar xzf roundcubemail-1.6.7-complete.tar.gz
-mv roundcubemail-1.6.7 roundcube
-chown -R www-data:www-data roundcube
-
-# Crear base de datos para Roundcube
-sudo -u postgres psql -c "CREATE DATABASE roundcube OWNER mailpanel;"
-sudo -u postgres psql roundcube < /var/www/roundcube/SQL/postgres.initial.sql
-
-# Configurar /var/www/roundcube/config/config.inc.php
-# (editar con los datos de tu servidor)
-```
-
----
-
-## Actualizar el panel
-
-```bash
-cd /opt/mailpanel
-git pull
-
-# Backend
-source backend/venv/bin/activate
-pip install -r backend/requirements.txt
-python backend/manage.py migrate
-python backend/manage.py collectstatic --noinput
-deactivate
-
-# Frontend
-cd frontend && npm install && npm run build
-
-# Reiniciar
-systemctl restart mailpanel nginx
-```
-
----
-
-## Mantenimiento
-
-```bash
-# Ver estado de todos los servicios
-for s in postfix dovecot rspamd opendkim nginx fail2ban; do
-  systemctl status $s --no-pager -l | head -3
-done
-
-# Limpiar cola de correos bloqueados
-postsuper -d ALL deferred
-
-# Rotar logs de Postfix
-postfix reload
-
-# Renovar SSL (automático con cron, pero puede forzarse)
-certbot renew --dry-run
-
-# Backup de la base de datos
-pg_dump mailpanel > /backup/mailpanel_$(date +%Y%m%d).sql
-```
-
----
-
-## Estructura del proyecto
+## Estructura del Proyecto
 
 ```
-mailpanel/
-├── backend/                    # Django REST API
-│   ├── mailpanel/              # Configuración Django
-│   │   ├── settings.py
-│   │   ├── urls.py
-│   │   └── celery.py
-│   ├── apps/
-│   │   ├── accounts/           # Usuarios admin + JWT
-│   │   ├── domains/            # Dominios + DKIM + DNS checker
-│   │   ├── mailboxes/          # Buzones virtuales
-│   │   ├── aliases/            # Alias y redirecciones
-│   │   └── services/           # Estado servicios + logs
-│   └── requirements.txt
-├── frontend/                   # React + Vite + TailwindCSS
-│   ├── src/
-│   │   ├── pages/              # Dashboard, Dominios, Buzones, etc.
-│   │   ├── components/         # Layout, UI components
-│   │   ├── api/                # Cliente Axios + interceptores JWT
-│   │   └── context/            # AuthContext
-│   └── package.json
-├── scripts/                    # Instaladores Bash
-│   ├── install.sh              # Script principal
+MailSuite/
+├── README.md                        # Este archivo
+├── .gitignore
+├── backend/                         # API REST — Django
+│   ├── manage.py
+│   ├── requirements.txt
+│   ├── .env.example                 # Variables de entorno (copiar a .env)
+│   ├── mailpanel/                   # Configuración Django
+│   │   ├── settings.py              # Producción (PostgreSQL)
+│   │   ├── settings_dev.py          # Desarrollo local (SQLite)
+│   │   ├── urls.py                  # Router principal
+│   │   ├── celery.py                # Tareas asíncronas
+│   │   └── wsgi.py
+│   └── apps/
+│       ├── accounts/                # Usuarios admin + JWT
+│       ├── domains/                 # Dominios, DKIM, verificación DNS
+│       ├── mailboxes/               # Buzones virtuales con cuotas
+│       ├── aliases/                 # Alias y redirecciones
+│       └── services/                # Estado de servicios + logs
+├── frontend/                        # SPA — React + Vite + TailwindCSS
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.js
+│   └── src/
+│       ├── main.jsx
+│       ├── App.jsx
+│       ├── index.css
+│       ├── api/
+│       │   └── client.js            # Axios + interceptor JWT
+│       ├── context/
+│       │   └── AuthContext.jsx      # Autenticación global
+│       ├── components/
+│       │   └── Layout.jsx           # Sidebar + navegación
+│       └── pages/
+│           ├── LoginPage.jsx
+│           ├── DashboardPage.jsx    # Estadísticas + estado servicios
+│           ├── DomainsPage.jsx      # Dominios + DNS Checklist + DKIM
+│           ├── MailboxesPage.jsx    # Buzones + contraseñas + cuotas
+│           ├── AliasesPage.jsx      # Alias multi-destino
+│           ├── ServicesPage.jsx     # Control de servicios
+│           └── LogsPage.jsx         # Visor de logs en tiempo real
+├── scripts/                         # Instaladores Bash para VPS
+│   ├── install.sh                   # Instalador principal (un solo comando)
 │   ├── configure_postfix.sh
 │   ├── configure_dovecot.sh
 │   ├── configure_opendkim.sh
 │   ├── configure_rspamd.sh
 │   └── configure_nginx.sh
 ├── configs/
-│   └── fail2ban/jail.local
+│   └── fail2ban/
+│       └── jail.local               # Reglas de protección fuerza bruta
 └── docs/
-    ├── dns-checklist.md
-    └── security-guide.md
+    ├── dns-checklist.md             # Checklist DNS por dominio
+    └── security-guide.md            # Guía de seguridad y respuesta a incidentes
 ```
+
+---
+
+## 🚀 Instalación en VPS — Producción
+
+Este es el modo de uso principal. El instalador configura todo automáticamente en una VPS limpia con Ubuntu 22.04.
+
+### Requisitos del VPS
+
+| Recurso | Mínimo | Recomendado |
+| :--- | :--- | :--- |
+| RAM | 1 GB | 2 GB |
+| CPU | 1 vCPU | 2 vCPU |
+| Disco | 20 GB | 50+ GB |
+| OS | Ubuntu 22.04 LTS | Ubuntu 22.04 / 24.04 |
+
+### Puertos necesarios en el firewall
+
+| Puerto | Servicio |
+| :--- | :--- |
+| 22 | SSH |
+| 25 | SMTP (recepción de correo) |
+| 80 | HTTP → redirect HTTPS |
+| 443 | HTTPS (panel + webmail) |
+| 465 | SMTPS |
+| 587 | SMTP Submission (envío autenticado) |
+| 993 | IMAPS |
+| 995 | POP3S |
+
+### Comando de instalación
+
+```bash
+# 1. Clonar el repositorio en la VPS
+git clone https://github.com/CuriosidadesDeHackers/MailSuite.git /opt/mailsuite
+cd /opt/mailsuite
+
+# 2. Dar permisos a los scripts
+chmod +x scripts/*.sh
+
+# 3. Ejecutar el instalador (como root)
+sudo bash scripts/install.sh \
+  --domain mail.tudominio.com \
+  --email admin@tudominio.com
+```
+
+El instalador realiza automáticamente:
+- Instalación de Postfix, Dovecot, Rspamd, OpenDKIM, Nginx, Certbot, Fail2ban
+- Configuración de PostgreSQL con usuario y contraseña aleatorios
+- Obtención del certificado SSL con Let's Encrypt
+- Despliegue del backend Django con Gunicorn como servicio systemd
+- Build del frontend React y configuración de Nginx como proxy
+- Configuración de Fail2ban para proteger SMTP, IMAP y SSH
+
+Al finalizar, el panel estará disponible en `https://mail.tudominio.com`
+
+---
+
+## 🖥️ Instalación Local — Desarrollo
+
+Para probar el panel en tu máquina antes de desplegarlo en producción.
+
+### Requisitos
+
+- Python 3.10+
+- Node.js 18+
+- npm 9+
+
+### Backend Django
+
+```bash
+cd backend
+
+# Crear entorno virtual
+python -m venv venv
+source venv/Scripts/activate  # Windows
+# source venv/bin/activate     # Linux/macOS
+
+# Instalar dependencias
+pip install django djangorestframework djangorestframework-simplejwt \
+            django-cors-headers python-decouple dnspython passlib bcrypt
+
+# Crear base de datos (SQLite local)
+DJANGO_SETTINGS_MODULE=mailpanel.settings_dev python manage.py migrate
+
+# Crear superusuario admin
+DJANGO_SETTINGS_MODULE=mailpanel.settings_dev \
+DJANGO_SUPERUSER_USERNAME=admin \
+DJANGO_SUPERUSER_EMAIL=tu@email.com \
+DJANGO_SUPERUSER_PASSWORD=Admin1234567! \
+python manage.py createsuperuser --noinput
+
+# Arrancar servidor
+DJANGO_SETTINGS_MODULE=mailpanel.settings_dev python manage.py runserver 8000
+```
+
+### Frontend React
+
+```bash
+cd frontend
+
+# Instalar dependencias
+npm install
+
+# Arrancar servidor de desarrollo
+npm run dev
+```
+
+El panel estará disponible en `http://localhost:5173`
+
+> **Nota:** En local, los servicios de correo (Postfix, Dovecot, etc.) aparecen como inactivos porque `systemctl` es exclusivo de Linux. El resto del panel funciona completamente.
+
+---
+
+## 🔐 Acceso al Panel
+
+| Campo | Valor por defecto |
+| :--- | :--- |
+| URL (dev) | `http://localhost:5173` |
+| URL (prod) | `https://mail.tudominio.com` |
+| Usuario | `admin` |
+| Contraseña | La generada durante la instalación |
+
+> Cambia la contraseña del administrador inmediatamente tras el primer acceso.
+
+---
+
+## 📋 Registros DNS
+
+Tras instalar MailSuite, debes añadir estos registros en tu proveedor de dominio:
+
+| Tipo | Nombre | Valor |
+| :--- | :--- | :--- |
+| `A` | `mail` | `TU_IP_VPS` |
+| `MX` | `@` | `mail.tudominio.com` (prioridad 10) |
+| `TXT` SPF | `@` | `v=spf1 mx a ip4:TU_IP_VPS ~all` |
+| `TXT` DKIM | `mail._domainkey` | *(generado automáticamente — ver panel → Dominios → DNS)* |
+| `TXT` DMARC | `_dmarc` | `v=DMARC1; p=quarantine; rua=mailto:dmarc@tudominio.com` |
+| `PTR` | `TU_IP_VPS` | `mail.tudominio.com` *(configurar en el proveedor VPS)* |
+
+La verificación de DNS puede hacerse desde el panel en **Dominios → Verificar DNS**.
+
+Consulta la guía completa en [`docs/dns-checklist.md`](docs/dns-checklist.md).
+
+---
+
+## API Endpoints
+
+| Método | Endpoint | Descripción |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/login/` | Obtener token JWT |
+| `POST` | `/api/auth/refresh/` | Renovar token de acceso |
+| `GET/POST` | `/api/domains/` | Listar / crear dominios |
+| `POST` | `/api/domains/{id}/verify_dns/` | Verificar MX, SPF, DKIM, DMARC |
+| `GET` | `/api/domains/{id}/dns_checklist/` | Registros DNS necesarios |
+| `POST` | `/api/domains/{id}/regenerate_dkim/` | Regenerar clave DKIM |
+| `GET/POST` | `/api/mailboxes/` | Listar / crear buzones |
+| `POST` | `/api/mailboxes/{id}/change_password/` | Cambiar contraseña |
+| `POST` | `/api/mailboxes/{id}/toggle_active/` | Activar / desactivar buzón |
+| `GET` | `/api/mailboxes/{id}/usage/` | Uso de disco del buzón |
+| `GET/POST` | `/api/aliases/` | Listar / crear alias |
+| `POST` | `/api/aliases/{id}/toggle_active/` | Activar / desactivar alias |
+| `GET` | `/api/services/` | Estado de todos los servicios |
+| `POST` | `/api/services/{svc}/{action}/` | start / stop / restart / reload |
+| `GET` | `/api/logs/` | Logs de Postfix, Dovecot o Rspamd |
+| `GET` | `/api/dashboard/` | Estadísticas generales del servidor |
+
+---
+
+## Tecnologías
+
+MailSuite combina un backend seguro y robusto con un frontend moderno, conectados a los servicios de correo estándar del ecosistema Linux.
+
+<br>
+
+| Capa | Tecnologías | Función |
+| :--- | :--- | :--- |
+| <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/React-Dark.svg" height="60" alt="Frontend"><br>**FRONTEND**<br>*SPA moderna* | <ul><li>**React 18** + Vite</li><li>**TailwindCSS** (dark theme)</li><li>**React Query** (caché + revalidación)</li><li>**Axios** + interceptor JWT</li></ul> | **Panel oscuro y reactivo**. Navegación instantánea sin recargas, actualización automática del estado de servicios cada 15 segundos y gestión completa de tokens con refresco silencioso. |
+| <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Django.svg" height="60" alt="Backend"><br>**BACKEND**<br>*API REST segura* | <ul><li>**Django 4.2** + DRF</li><li>**JWT** con rotación de tokens</li><li>**Rate limiting** por usuario/IP</li><li>**Gunicorn** (producción)</li></ul> | **Seguridad por defecto**. HTTPS obligatorio, HSTS, X-Frame-Options, contraseñas con SHA512-CRYPT compatible con Dovecot, rate limiting de 20 req/min para anónimos. |
+| <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/PostgreSQL-Dark.svg" height="60" alt="Database"><br>**BASE DE DATOS**<br>*Relacional* | <ul><li>**PostgreSQL** (producción)</li><li>**SQLite** (desarrollo local)</li><li>**Django ORM**</li></ul> | **Consultas en tiempo real**. Postfix y Dovecot consultan directamente PostgreSQL para validar dominios, buzones y alias sin reiniciar servicios. |
+| <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Nginx.svg" height="60" alt="Proxy"><br>**PROXY + SSL**<br>*Infraestructura web* | <ul><li>**Nginx** (reverse proxy)</li><li>**Let's Encrypt** + Certbot</li><li>**TLS 1.2+** obligatorio</li></ul> | **Certificado gratuito y automático**. Nginx sirve el frontend React como SPA, proxifica la API Django, expone el webmail en `/webmail` y el panel de Rspamd en `/rspamd`. |
+| <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Linux-Dark.svg" height="60" alt="Mail"><br>**SERVIDOR DE CORREO**<br>*Stack completo* | <ul><li>**Postfix** (SMTP)</li><li>**Dovecot** (IMAP/POP3)</li><li>**Rspamd** (antispam)</li><li>**OpenDKIM** (firma DKIM)</li></ul> | **Entregabilidad máxima**. SPF, DKIM y DMARC configurados por dominio. Rspamd actúa como milter con greylist y puntuación. Protección anti-relay garantizada por configuración. |
+| <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Bash-Dark.svg" height="60" alt="Scripts"><br>**AUTOMATIZACIÓN**<br>*Despliegue* | <ul><li>**Bash** (scripts de instalación)</li><li>**Fail2ban** (protección)</li><li>**systemd** (servicios)</li></ul> | **Un solo comando para desplegar todo**. El instalador configura el sistema completo desde cero en una VPS limpia, incluyendo backups automáticos de configuraciones existentes antes de modificarlas. |
+
+---
+
+## 🛡️ Seguridad
+
+MailSuite implementa múltiples capas de seguridad listas para producción:
+
+- **Anti-relay:** `reject_unauth_destination` en Postfix — imposible ser usado como relay abierto
+- **TLS obligatorio:** SMTP submission (587) e IMAP (993) requieren cifrado
+- **DKIM por dominio:** Claves RSA-2048 generadas automáticamente y rotables desde el panel
+- **Fail2ban:** Baneos automáticos tras intentos fallidos en SSH, SMTP y IMAP
+- **SPF + DMARC:** Configurados automáticamente con política `quarantine`
+- **Contraseñas:** SHA512-CRYPT compatible con Dovecot, mínimo 12 caracteres
+- **JWT con blacklist:** Logout real con invalidación de tokens
+
+Consulta la guía completa en [`docs/security-guide.md`](docs/security-guide.md).
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la licencia [MIT](LICENSE).
+
+---
+
+<p align="center">
+  Hecho con ❤️ por <a href="https://github.com/CuriosidadesDeHackers">CuriosidadesDeHackers</a>
+</p>

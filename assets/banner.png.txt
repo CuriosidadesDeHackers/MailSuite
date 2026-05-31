@@ -1,0 +1,2 @@
+Sube aquí tu imagen de banner (banner.png) con dimensiones recomendadas 1280x400px.
+El README ya apunta a: assets/banner.png
