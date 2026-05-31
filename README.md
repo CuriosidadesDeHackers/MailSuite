@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/CuriosidadesDeHackers/MailSuite/master/assets/banner.png" alt="MailSuite Banner" width="100%">
+  <img src="https://raw.githubusercontent.com/CuriosidadesDeHackers/MailSuite/master/assets/banner.svg" alt="MailSuite Banner" width="100%">
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/CuriosidadesDeHackers/MailSuite/master/assets/logo.png" alt="MailSuite Logo" width="110" height="110" style="border-radius: 20px;">
+  <img src="https://raw.githubusercontent.com/CuriosidadesDeHackers/MailSuite/master/assets/logo.svg" alt="MailSuite Logo" width="110" height="110" style="border-radius: 20px;">
 </p>
 
 <h1 align="center">MailSuite</h1>
@@ -25,7 +25,7 @@
 
 ---
 
-## 👥 Autor
+## 👥 Autores
 
 <br>
 
@@ -33,18 +33,42 @@
   <table>
     <tr>
       <td align="center" width="200">
-        <a href="https://github.com/CuriosidadesDeHackers" target="_blank">
-          <img src="https://avatars.githubusercontent.com/CuriosidadesDeHackers" width="120" height="120" style="border-radius: 50%; border: 3px solid #3b82f6;" alt="CuriosidadesDeHackers">
+        <a href="https://www.linkedin.com/in/maalfer1/" target="_blank">
+          <img src="https://github.com/ccyl13/Pentestify/blob/main/assets/images/el-pinguino-de-mario.webp?raw=true" width="120" height="120" style="border-radius: 50%; border: 3px solid #9fef00;" alt="El Pingüino de Mario">
         </a>
         <br><br>
-        <strong>CuriosidadesDeHackers</strong>
+        <strong>El Pingüino de Mario</strong>
         <br>
+        <a href="https://www.linkedin.com/in/maalfer1/" target="_blank">
+          <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white" alt="LinkedIn">
+        </a>
+      </td>
+      <td width="60"></td>
+      <td align="center" width="200">
+        <a href="https://www.linkedin.com/in/manuel-mart%C3%ADnez-casasola/" target="_blank">
+          <img src="https://avatars.githubusercontent.com/CuriosidadesDeHackers" width="120" height="120" style="border-radius: 50%; border: 3px solid #3b82f6;" alt="Manuel Martínez">
+        </a>
+        <br><br>
+        <strong>Manuel Martínez</strong>
+        <br>
+        <a href="https://www.linkedin.com/in/manuel-mart%C3%ADnez-casasola/" target="_blank">
+          <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white" alt="LinkedIn">
+        </a>
+        &nbsp;
         <a href="https://github.com/CuriosidadesDeHackers" target="_blank">
           <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub">
         </a>
-        &nbsp;
-        <a href="https://www.youtube.com/@CuriosidadesDeHackers" target="_blank">
-          <img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube">
+      </td>
+      <td width="60"></td>
+      <td align="center" width="200">
+        <a href="https://www.linkedin.com/in/thomasoneil%C3%A1lvarez/" target="_blank">
+          <img src="https://github.com/ccyl13/Pentestify/blob/main/assets/images/thomas-oneil.webp?raw=true" width="120" height="120" style="border-radius: 50%; border: 3px solid #9fef00;" alt="Thomas O'neil">
+        </a>
+        <br><br>
+        <strong>Thomas O'neil Álvarez</strong>
+        <br>
+        <a href="https://www.linkedin.com/in/thomasoneil%C3%A1lvarez/" target="_blank">
+          <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white" alt="LinkedIn">
         </a>
       </td>
     </tr>

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1d4ed8"/>
+      <stop offset="100%" style="stop-color:#1e40af"/>
+    </linearGradient>
+    <linearGradient id="shineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.12"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="softShadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#0f172a" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="400" height="400" rx="80" fill="url(#bgGrad)" filter="url(#softShadow)"/>
+  <!-- Shine overlay -->
+  <rect width="400" height="400" rx="80" fill="url(#shineGrad)"/>
+  <!-- Subtle border -->
+  <rect x="2" y="2" width="396" height="396" rx="79" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+
+  <!-- Envelope body -->
+  <rect x="80" y="140" width="240" height="168" rx="16" fill="white" opacity="0.95"/>
+
+  <!-- Envelope flap (V shape) -->
+  <polygon points="80,140 200,232 320,140" fill="none" stroke="#1d4ed8" stroke-width="6" stroke-linejoin="round"/>
+  <!-- Flap fill so it blends -->
+  <polygon points="80,140 200,232 320,140 320,143 200,236 80,143" fill="white" opacity="0.95"/>
+
+  <!-- Envelope bottom lines (mail lines) -->
+  <line x1="120" y1="230" x2="200" y2="230" stroke="#bfdbfe" stroke-width="8" stroke-linecap="round"/>
+  <line x1="120" y1="256" x2="240" y2="256" stroke="#bfdbfe" stroke-width="8" stroke-linecap="round"/>
+  <line x1="120" y1="282" x2="180" y2="282" stroke="#bfdbfe" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- Signal / wifi arcs top-right (connectivity indicator) -->
+  <g transform="translate(268, 96)" stroke="white" fill="none" stroke-linecap="round">
+    <path d="M0 32 Q16 16 32 32" stroke-width="7" opacity="0.9"/>
+    <path d="M-10 22 Q16 -4 42 22" stroke-width="7" opacity="0.6"/>
+    <path d="M-20 12 Q16 -20 52 12" stroke-width="7" opacity="0.3"/>
+    <circle cx="16" cy="38" r="5" fill="white" opacity="0.9"/>
+  </g>
+</svg>
