@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/CuriosidadesDeHackers/MailSuite/master/assets/banner.svg" alt="MailSuite Banner" width="100%">
+  <img src="https://raw.githubusercontent.com/CuriosidadesDeHackers/MailSuite/master/assets/banner.png" alt="MailSuite Banner" width="100%">
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/CuriosidadesDeHackers/MailSuite/master/assets/logo.svg" alt="MailSuite Logo" width="110" height="110" style="border-radius: 20px;">
+  <img src="https://raw.githubusercontent.com/CuriosidadesDeHackers/MailSuite/master/assets/logo.png" alt="MailSuite Logo" width="110" height="110" style="border-radius: 20px;">
 </p>
 
 <h1 align="center">MailSuite</h1>
